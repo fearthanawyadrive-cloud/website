@@ -916,4 +916,193 @@ function renderLoyalty() {
     <div class="tier-row ${t.current?'current':''} reveal">
       <div class="tier-dot" style="background:${t.color};box-shadow:0 0 8px ${t.color}40"></div>
       <div class="tier-info">
-        <div class="tier-name" style="color:${t.current?'var(--white)':'var(--gray)'}">${t.name} ${t.
+        <div class="tier-name" style="color:${t.current?'var(--white)':'var(--gray)'}">${t.name} ${t.current ? '(CURRENT)' : ''}</div>
+        <div class="tier-req">${t.req}</div>
+      </div>
+      <div class="tier-perk">${t.perk}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('rewards-grid').innerHTML = CAFE_DATA.loyalty.rewards.map(r=>`
+    <div class="reward-card reveal">
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-name">${r.name}</div>
+      <div class="reward-cost">${r.cost}</div>
+      <div class="reward-desc">${r.desc}</div>
+    </div>
+  `).join('');
+}
+
+// STATION AVAILABILITY (LIVE MAP SIMULATION)
+function renderStations() {
+  const grid = document.getElementById('station-grid');
+  let html = '';
+  let freeCount = 0;
+  let occCount = 0;
+  let vipFreeCount = 0;
+
+  for(let i=1; i<=42; i++) {
+    const isVip = (i >= 37); // Last 6 stations are VIP
+    const isOccupied = Math.random() > 0.45; // Randomize availability for demo
+
+    if(!isOccupied && !isVip) freeCount++;
+    if(!isOccupied && isVip) vipFreeCount++;
+    if(isOccupied) occCount++;
+
+    const stateClass = isOccupied ? 'occupied' : 'free';
+    const vipClass = isVip ? 'vip' : '';
+
+    html += `
+      <div class="station-cell ${stateClass} ${vipClass}">
+        <div class="station-dot"></div>
+        <div class="station-num">${i < 10 ? '0'+i : i}</div>
+      </div>
+    `;
+  }
+  grid.innerHTML = html;
+
+  document.getElementById('avail-summary').innerHTML = `
+    <div class="avail-stat">
+      <div class="avail-stat-num">${freeCount}</div>
+      <div class="avail-stat-label">MAIN FREE</div>
+    </div>
+    <div class="avail-stat">
+      <div class="avail-stat-num" style="color:var(--orange)">${occCount}</div>
+      <div class="avail-stat-label">OCCUPIED</div>
+    </div>
+    <div class="avail-stat">
+      <div class="avail-stat-num" style="color:#b47fff">${vipFreeCount}</div>
+      <div class="avail-stat-label">VIP FREE</div>
+    </div>
+  `;
+}
+
+// INTERACTIVITY & INIT
+let lastKnownScrollPosition = 0;
+let ticking = false;
+
+function initReveal() {
+  const reveals = document.querySelectorAll('.reveal');
+  const windowHeight = window.innerHeight;
+  reveals.forEach(r => {
+    const elementTop = r.getBoundingClientRect().top;
+    if (elementTop < windowHeight - 40) {
+      r.classList.add('visible');
+    }
+  });
+}
+
+function animateNumbers() {
+  const nums = document.querySelectorAll('.stat-num[data-target]');
+  nums.forEach(n => {
+    const target = +n.getAttribute('data-target');
+    const inc = target / 40;
+    let c = 0;
+    const update = () => {
+      c += inc;
+      if(c < target) {
+        n.innerText = Math.ceil(c);
+        requestAnimationFrame(update);
+      } else {
+        n.innerText = target;
+      }
+    };
+    update();
+  });
+}
+
+// TOAST NOTIFICATIONS
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// MODAL LOGIC
+function openModal(title, specs, icon) {
+  document.getElementById('reserveModal').classList.add('open');
+  document.getElementById('modal-station-title').innerText = title;
+  document.getElementById('modal-station-info').innerHTML = `${icon} &nbsp; ${specs}`;
+  document.getElementById('modal-form-wrap').style.display = 'block';
+  document.getElementById('modal-success').style.display = 'none';
+}
+
+function closeModal() {
+  document.getElementById('reserveModal').classList.remove('open');
+}
+
+function confirmReserve() {
+  const phone = document.getElementById('modal-phone').value || '+20 1XX XXX XXXX';
+  document.getElementById('modal-form-wrap').style.display = 'none';
+  document.getElementById('modal-success').style.display = 'block';
+  document.getElementById('confirmed-phone').innerText = phone;
+}
+
+// THEME TOGGLE
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const html = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  if(html.getAttribute('data-theme') === 'dark') {
+    html.setAttribute('data-theme', 'light');
+    btn.innerText = '🌙';
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    btn.innerText = '☀️';
+  }
+});
+
+// CUSTOM CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+  ring.style.transform = `translate(${e.clientX - 16}px, ${e.clientY - 16}px)`;
+});
+
+// BOOTSTRAP / ONLOAD
+window.onload = () => {
+  renderSpecs();
+  renderPricing();
+  renderEvents();
+  renderGames();
+  renderMenu();
+  renderLoyalty();
+  renderStations();
+  
+  // Staggered animations
+  setTimeout(initReveal, 100);
+  setTimeout(animateNumbers, 300);
+  
+  // Loyalty bar fill animation
+  setTimeout(() => {
+    document.getElementById('loyalty-bar').style.width = '65%';
+    let pts = 0;
+    let target = 2600;
+    let inc = target/40;
+    const t = setInterval(()=>{
+      pts += inc;
+      if(pts >= target) { clearInterval(t); pts=target; }
+      document.getElementById('loyalty-pts-display').innerText = Math.ceil(pts).toLocaleString();
+    }, 30);
+  }, 500);
+  
+  // Auto-refresh station map every 60 seconds
+  setInterval(renderStations, 60000);
+};
+
+// SCROLL LISTENER
+window.addEventListener('scroll', () => {
+  lastKnownScrollPosition = window.scrollY;
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      initReveal();
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+
+</script>
+</body>
+</html>
