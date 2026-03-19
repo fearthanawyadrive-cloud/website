@@ -627,34 +627,35 @@ footer { padding:60px 5% 36px; border-top:1px solid var(--border); background:va
   <div class="booking-wrap">
     <div class="booking-form">
       <div class="form-row">
-  <div class="form-group">
-    <label class="form-label">First Name</label>
-    <input type="text" class="form-input" id="booking-fname" placeholder="Ahmed">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Last Name</label>
-    <input type="text" class="form-input" id="booking-lname" placeholder="Hassan">
-  </div>
-</div>
-<div class="form-group">
-  <label class="form-label">Phone Number</label>
-  <input type="tel" class="form-input" id="booking-phone" placeholder="+20 1XX XXX XXXX">
-</div>
-<div class="form-row">
-  <div class="form-group">
-    <label class="form-label">Date</label>
-    <input type="date" class="form-input" id="booking-date">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Time Slot</label>
-    <select class="form-select">
-      <option>10:00 AM</option><option>12:00 PM</option><option>2:00 PM</option>
-      <option>4:00 PM</option><option>6:00 PM</option><option>8:00 PM</option><option>10:00 PM</option>
-    </select>
-  </div>
-</div>
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-input" id="booking-fname" placeholder="Ahmed">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" id="booking-lname" placeholder="Hassan">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" class="form-input" id="booking-phone" placeholder="+20 1XX XXX XXXX">
+      </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Station Type</label>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="booking-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time Slot</label>
+          <select class="form-select">
+            <option>10:00 AM</option><option>12:00 PM</option><option>2:00 PM</option>
+            <option>4:00 PM</option><option>6:00 PM</option><option>8:00 PM</option><option>10:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Station Type</label>
           <select class="form-select">
             <option>Solo Drop-in — EGP 35/hr</option>
             <option>Apex Tier RTX 4090 — EGP 55/hr</option>
@@ -662,14 +663,18 @@ footer { padding:60px 5% 36px; border-top:1px solid var(--border); background:va
             <option>Monthly Pass Holder</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">Duration</label>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
           <select class="form-select">
             <option>1 Hour</option><option>2 Hours</option><option>3 Hours</option>
             <option>4 Hours</option><option>5+ Hours</option><option>All Night (8hrs)</option>
           </select>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Notes (optional)</label><input type="text" class="form-input" placeholder="Preferred peripherals, game pre-loaded, etc."></div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input type="text" class="form-input" placeholder="Preferred peripherals, game pre-loaded, etc.">
+      </div>
       <button class="btn-submit" onclick="submitBooking()">CONFIRM RESERVATION →</button>
     </div>
     <div class="booking-info">
