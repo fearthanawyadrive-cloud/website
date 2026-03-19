@@ -896,53 +896,19 @@ function submitGameRequest() {
   document.getElementById('gameRequestInput').value = '';
   showToast(`Game request for "${val}" submitted!`);
   setTimeout(()=>{ document.getElementById('requestSent').style.display='none'; },4000);
-}
-   function submitBooking() {
+   }
+function submitBooking() {
   const fname = document.getElementById('booking-fname');
   const lname = document.getElementById('booking-lname');
   const phone = document.getElementById('booking-phone');
   const date = document.getElementById('booking-date');
 
+  alert(`fname: "${fname ? fname.value : 'NOT FOUND'}" | lname: "${lname ? lname.value : 'NOT FOUND'}" | phone: "${phone ? phone.value : 'NOT FOUND'}" | date: "${date ? date.value : 'NOT FOUND'}"`);
+
   const egyptPhone = /^(\+20|0020|0)1[0-9]{9}$/;
-
-  let valid = true;
-
-  [fname, lname, date].forEach(field => {
-    if (!field.value.trim()) {
-      field.style.borderColor = 'var(--orange)';
-      valid = false;
-    } else {
-      field.style.borderColor = 'var(--border)';
-    }
-  });
-
   const cleanPhone = phone.value.replace(/\s/g, '');
-  if (!cleanPhone || !egyptPhone.test(cleanPhone)) {
-    phone.style.borderColor = 'var(--orange)';
-    valid = false;
-  } else {
-    phone.style.borderColor = 'var(--border)';
-  }
-
-  if (!valid) {
-    showToast('Please check your details — invalid or missing fields.');
-    return;
-  }
-
-  const message = 
-    `New Reservation:%0A` +
-    `Name: ${fname.value.trim()} ${lname.value.trim()}%0A` +
-    `Phone: ${phone.value.trim()}%0A` +
-    `Date: ${date.value}%0A` +
-    `Station: ${document.querySelector('.booking-form select:nth-of-type(1)').value}%0A` +
-    `Duration: ${document.querySelector('.booking-form select:nth-of-type(2)').value}`;
-
-  showToast('Redirecting to WhatsApp...');
-  setTimeout(() => {
-    window.location.href = `https://wa.me/201095115475?text=${message}`;
-  }, 1000);
+  alert(`cleanPhone: "${cleanPhone}" | valid: ${egyptPhone.test(cleanPhone)}`);
    }
-
 // MENU
 function renderMenu(category='Drinks') {
   const tabsEl = document.getElementById('menu-tabs-container');
