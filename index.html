@@ -930,16 +930,21 @@ function submitGameRequest() {
   }
 
   const message = 
-  `New Reservation:%0A` +
-  `Name: ${fname.value.trim()} ${lname.value.trim()}%0A` +
-  `Phone: ${phone.value.trim()}%0A` +
-  `Date: ${date.value}%0A` +
-  `Station: ${document.querySelector('.booking-form select:nth-of-type(1)').value}%0A` +
-  `Duration: ${document.querySelector('.booking-form select:nth-of-type(2)').value}`;
+    `New Reservation:%0A` +
+    `Name: ${fname.value.trim()} ${lname.value.trim()}%0A` +
+    `Phone: ${phone.value.trim()}%0A` +
+    `Date: ${date.value}%0A` +
+    `Station: ${document.querySelector('.booking-form select:nth-of-type(1)').value}%0A` +
+    `Duration: ${document.querySelector('.booking-form select:nth-of-type(2)').value}`;
 
-window.open(`https://wa.me/201095115475?text=${message}`, '_blank');
-showToast('Redirecting to WhatsApp...');
-   }
+  const waLink = document.createElement('a');
+  waLink.href = `https://wa.me/201095115475?text=${message}`;
+  waLink.target = '_blank';
+  waLink.rel = 'noopener';
+  document.body.appendChild(waLink);
+  waLink.click();
+  document.body.removeChild(waLink);
+  showToast('Redirecting to WhatsApp...');
 
 // MENU
 function renderMenu(category='Drinks') {
