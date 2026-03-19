@@ -897,7 +897,11 @@ function submitGameRequest() {
   showToast(`Game request for "${val}" submitted!`);
   setTimeout(()=>{ document.getElementById('requestSent').style.display='none'; },4000);
    }
-   
+
+   function submitBooking() {
+  alert('function started');
+  const fname = document.getElementById('booking-fname');
+      
 function submitBooking() {
   const fname = document.getElementById('booking-fname');
   const lname = document.getElementById('booking-lname');
