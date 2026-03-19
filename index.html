@@ -897,36 +897,12 @@ function submitGameRequest() {
   showToast(`Game request for "${val}" submitted!`);
   setTimeout(()=>{ document.getElementById('requestSent').style.display='none'; },4000);
    }
+   
 function submitBooking() {
   const fname = document.getElementById('booking-fname');
   const lname = document.getElementById('booking-lname');
   const phone = document.getElementById('booking-phone');
   const date = document.getElementById('booking-date');
-
-  const egyptPhone = /^(\+20|0020|0)1[0-9]{9}$/;
-  let valid = true;
-
-  [fname, lname, date].forEach(field => {
-    if (!field.value.trim()) {
-      field.style.borderColor = 'var(--orange)';
-      valid = false;
-    } else {
-      field.style.borderColor = 'var(--border)';
-    }
-  });
-
-  const cleanPhone = phone.value.replace(/\s/g, '');
-  if (!cleanPhone || !egyptPhone.test(cleanPhone)) {
-    phone.style.borderColor = 'var(--orange)';
-    valid = false;
-  } else {
-    phone.style.borderColor = 'var(--border)';
-  }
-
-  if (!valid) {
-    showToast('Please check your details — invalid or missing fields.');
-    return;
-  }
 
   const message =
     `New Reservation:%0A` +
@@ -938,6 +914,7 @@ function submitBooking() {
 
   window.location.href = `https://wa.me/201095115475?text=${message}`;
 }
+   
 // MENU
 function renderMenu(category='Drinks') {
   const tabsEl = document.getElementById('menu-tabs-container');
