@@ -898,15 +898,16 @@ function submitGameRequest() {
   setTimeout(()=>{ document.getElementById('requestSent').style.display='none'; },4000);
 }
    function submitBooking() {
-  const fields = [
-    document.querySelector('.booking-form input[placeholder="Ahmed"]'),
-    document.querySelector('.booking-form input[placeholder="Hassan"]'),
-    document.querySelector('.booking-form input[type="tel"]'),
-    document.querySelector('.booking-form input[type="date"]'),
-  ];
+  const fname = document.getElementById('booking-fname');
+  const lname = document.getElementById('booking-lname');
+  const phone = document.getElementById('booking-phone');
+  const date = document.getElementById('booking-date');
+
+  const egyptPhone = /^(\+20|0)1[0-2,5]{1}[0-9]{8}$/;
 
   let valid = true;
-  fields.forEach(field => {
+
+  [fname, lname, date].forEach(field => {
     if (!field.value.trim()) {
       field.style.borderColor = 'var(--orange)';
       valid = false;
@@ -915,8 +916,16 @@ function submitGameRequest() {
     }
   });
 
+  const cleanPhone = phone.value.replace(/\s/g, '');
+  if (!cleanPhone || !egyptPhone.test(cleanPhone)) {
+    phone.style.borderColor = 'var(--orange)';
+    valid = false;
+  } else {
+    phone.style.borderColor = 'var(--border)';
+  }
+
   if (!valid) {
-    showToast('Please fill in all required fields.');
+    showToast('Please check your details — invalid or missing fields.');
     return;
   }
 
