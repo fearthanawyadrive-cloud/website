@@ -1033,11 +1033,29 @@ function closeModal() {
 }
 
 function confirmReserve() {
-  const phone = document.getElementById('modal-phone').value || '+20 1XX XXX XXXX';
+  const name = document.getElementById('modal-name');
+  const phone = document.getElementById('modal-phone');
+  let valid = true;
+
+  [name, phone].forEach(field => {
+    if (!field.value.trim()) {
+      field.style.borderColor = 'var(--orange)';
+      valid = false;
+    } else {
+      field.style.borderColor = 'var(--border)';
+    }
+  });
+
+  if (!valid) {
+    showToast('Please fill in your name and phone number.');
+    return;
+  }
+
+  const phone_val = phone.value || '+20 1XX XXX XXXX';
   document.getElementById('modal-form-wrap').style.display = 'none';
   document.getElementById('modal-success').style.display = 'block';
-  document.getElementById('confirmed-phone').innerText = phone;
-}
+  document.getElementById('confirmed-phone').innerText = phone_val;
+   }
 
 // THEME TOGGLE
 document.getElementById('themeToggle').addEventListener('click', () => {
