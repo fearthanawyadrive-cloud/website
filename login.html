@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS ARENA — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810; --bg2: #080d1a; --bg3: #0d1525;
+  --cyan: #00f5ff; --cyan-dim: rgba(0,245,255,0.12); --cyan-glow: rgba(0,245,255,0.4);
+  --orange: #ff6b2b; --orange-dim: rgba(255,107,43,0.15);
+  --white: #e8eaf0; --gray: #6b7a99;
+  --card-bg: rgba(13,21,37,0.95); --border: rgba(0,245,255,0.12); --border-hot: rgba(0,245,255,0.5);
+  --error: #ff4d6d; --success: #00f5c4;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: none;
+}
+
+/* CURSOR */
+.cursor { width:8px; height:8px; background:var(--cyan); border-radius:50%; position:fixed; top:0; left:0; pointer-events:none; z-index:9999; box-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan-glow); transition: transform 0.1s; }
+.cursor-ring { width:32px; height:32px; border:1px solid var(--cyan-glow); border-radius:50%; position:fixed; top:0; left:0; pointer-events:none; z-index:9998; transition: transform 0.15s; }
+
+/* BACKGROUND */
+.bg-grid {
+  position:fixed; inset:0;
+  background-image: linear-gradient(rgba(0,245,255,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(0,245,255,0.04) 1px,transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+  pointer-events:none;
+}
+.bg-glow-1 { position:fixed; width:500px; height:500px; background:radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%); top:-100px; right:-100px; pointer-events:none; animation:pulseGlow 5s ease-in-out infinite; }
+.bg-glow-2 { position:fixed; width:400px; height:400px; background:radial-gradient(circle, rgba(180,120,255,0.05) 0%, transparent 70%); bottom:-100px; left:-100px; pointer-events:none; animation:pulseGlow 5s ease-in-out infinite 2.5s; }
+body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,245,255,0.012) 2px,rgba(0,245,255,0.012) 4px); pointer-events:none; z-index:1; }
+
+/* NAV */
+.top-bar {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  padding: 0 5%; height:72px;
+  display: flex; align-items:center; justify-content:space-between;
+  background: rgba(5,8,16,0.88); backdrop-filter:blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-family:'Orbitron',monospace; font-weight:900; font-size:1.3rem; letter-spacing:4px; color:var(--white); text-decoration:none; }
+.nav-logo span { color:var(--cyan); }
+.back-link { font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:var(--gray); text-decoration:none; letter-spacing:2px; transition:color 0.2s; display:flex; align-items:center; gap:8px; }
+.back-link:hover { color:var(--cyan); }
+
+/* MAIN CARD */
+.auth-container {
+  position:relative; z-index:10;
+  width:100%; max-width:480px;
+  padding: 20px;
+  margin-top: 72px;
+}
+
+.auth-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-hot);
+  padding: 48px 44px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.6s ease both;
+}
+.auth-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--cyan), #b47fff, var(--cyan));
+  background-size: 200%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* TABS */
+.auth-tabs {
+  display:flex; gap:0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
+.auth-tab {
+  flex:1; background:none; border:none;
+  border-bottom: 2px solid transparent;
+  color:var(--gray);
+  font-family:'Orbitron',monospace; font-size:0.68rem; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; padding:12px;
+  cursor:none; transition:all 0.2s; margin-bottom:-1px;
+}
+.auth-tab.active { color:var(--cyan); border-bottom-color:var(--cyan); }
+.auth-tab:hover:not(.active) { color:var(--white); }
+
+/* PANELS */
+.auth-panel { display:none; animation: fadeUp 0.4s ease both; }
+.auth-panel.active { display:block; }
+
+/* LABEL */
+.auth-label {
+  font-family:'Share Tech Mono',monospace; font-size:0.68rem;
+  color:var(--cyan); letter-spacing:3px; text-transform:uppercase; margin-bottom:28px;
+}
+
+/* FORM ELEMENTS */
+.form-group { margin-bottom:18px; position:relative; }
+.form-label {
+  display:block; font-family:'Share Tech Mono',monospace;
+  font-size:0.65rem; letter-spacing:2px; color:var(--gray);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.form-input {
+  width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--border);
+  color:var(--white); font-family:'Rajdhani',sans-serif;
+  font-size:1rem; font-weight:500; padding:13px 16px;
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,245,255,0.08); }
+.form-input::placeholder { color:var(--gray); }
+.form-input.error { border-color:var(--error); }
+
+.password-wrap { position:relative; }
+.toggle-pw {
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  background:none; border:none; color:var(--gray); cursor:none;
+  font-family:'Share Tech Mono',monospace; font-size:0.65rem; letter-spacing:1px;
+  transition:color 0.2s;
+}
+.toggle-pw:hover { color:var(--cyan); }
+
+/* PHONE SPECIFIC */
+.phone-row { display:flex; gap:10px; }
+.country-code {
+  width:90px; background:rgba(0,0,0,0.4); border:1px solid var(--border);
+  color:var(--cyan); font-family:'Share Tech Mono',monospace; font-size:0.8rem;
+  padding:13px 12px; outline:none; flex-shrink:0;
+  transition:border-color 0.2s;
+}
+.country-code:focus { border-color:var(--cyan); }
+
+/* OTP */
+.otp-wrap {
+  display:none; margin-top:8px;
+}
+.otp-wrap.visible { display:block; animation:fadeUp 0.3s ease both; }
+.otp-inputs { display:flex; gap:10px; justify-content:center; margin:16px 0; }
+.otp-digit {
+  width:50px; height:56px; background:rgba(0,0,0,0.4);
+  border:1px solid var(--border); color:var(--cyan);
+  font-family:'Orbitron',monospace; font-weight:700; font-size:1.4rem;
+  text-align:center; outline:none; transition:all 0.2s;
+}
+.otp-digit:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,245,255,0.1); }
+.otp-resend {
+  font-family:'Share Tech Mono',monospace; font-size:0.7rem;
+  color:var(--gray); text-align:center; margin-top:8px;
+}
+.otp-resend span { color:var(--cyan); cursor:none; text-decoration:underline; }
+
+/* DIVIDER */
+.or-divider {
+  display:flex; align-items:center; gap:12px;
+  font-family:'Share Tech Mono',monospace; font-size:0.65rem;
+  color:var(--gray); letter-spacing:2px; margin:20px 0;
+}
+.or-divider::before,.or-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* GOOGLE BTN */
+.btn-google {
+  width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.15);
+  color:var(--white); font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.95rem;
+  padding:13px; cursor:none; transition:all 0.25s;
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  letter-spacing:1px;
+}
+.btn-google:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.3); }
+.google-icon { width:18px; height:18px; }
+
+/* SUBMIT BTN */
+.btn-submit {
+  width:100%; background:var(--cyan); color:var(--bg);
+  font-family:'Orbitron',monospace; font-weight:700;
+  font-size:0.72rem; letter-spacing:3px; text-transform:uppercase;
+  padding:16px; border:none; cursor:none; transition:all 0.25s;
+  margin-top:6px; position:relative; overflow:hidden;
+}
+.btn-submit:hover { box-shadow:0 0 30px var(--cyan-glow); }
+.btn-submit:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-submit .btn-loader {
+  display:none; width:18px; height:18px;
+  border:2px solid rgba(0,0,0,0.3); border-top-color:var(--bg);
+  border-radius:50%; animation:spin 0.8s linear infinite;
+  margin:0 auto;
+}
+.btn-submit.loading .btn-text { display:none; }
+.btn-submit.loading .btn-loader { display:block; }
+
+/* SEND OTP BTN */
+.btn-send-otp {
+  width:100%; background:transparent; border:1px solid var(--border-hot);
+  color:var(--cyan); font-family:'Orbitron',monospace; font-weight:600;
+  font-size:0.68rem; letter-spacing:2px; padding:13px;
+  cursor:none; transition:all 0.25s; margin-top:4px;
+}
+.btn-send-otp:hover { background:var(--cyan-dim); }
+
+/* ERROR / SUCCESS MESSAGES */
+.msg {
+  font-family:'Share Tech Mono',monospace; font-size:0.72rem;
+  letter-spacing:1px; padding:12px 14px; margin-bottom:16px;
+  display:none; align-items:center; gap:8px;
+}
+.msg.error { color:var(--error); background:rgba(255,77,109,0.08); border:1px solid rgba(255,77,109,0.3); }
+.msg.success { color:var(--success); background:rgba(0,245,196,0.08); border:1px solid rgba(0,245,196,0.3); }
+.msg.visible { display:flex; animation:fadeUp 0.3s ease both; }
+
+/* FORGOT PASSWORD */
+.forgot-link {
+  font-family:'Share Tech Mono',monospace; font-size:0.65rem;
+  color:var(--gray); text-decoration:none; float:right; margin-top:-12px; margin-bottom:18px;
+  display:block; text-align:right; transition:color 0.2s; cursor:none;
+}
+.forgot-link:hover { color:var(--cyan); }
+
+/* TERMS */
+.terms-note {
+  font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+  color:var(--gray); text-align:center; margin-top:20px; line-height:1.6;
+}
+.terms-note a { color:var(--cyan); text-decoration:none; }
+
+/* SUCCESS STATE */
+.auth-success {
+  display:none; text-align:center; padding:20px 0;
+  animation:fadeUp 0.5s ease both;
+}
+.success-icon-wrap {
+  width:80px; height:80px; border:2px solid var(--cyan);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  margin:0 auto 24px; font-size:2.2rem;
+  box-shadow:0 0 30px var(--cyan-glow);
+  animation:pulseGlow 2s ease-in-out infinite;
+}
+.auth-success h3 {
+  font-family:'Orbitron',monospace; font-weight:800; font-size:1.2rem;
+  margin-bottom:10px;
+}
+.auth-success p { font-size:0.9rem; color:var(--gray); line-height:1.6; }
+.auth-success .redirect-bar {
+  height:3px; background:var(--border); margin:20px 0 0; overflow:hidden;
+}
+.auth-success .redirect-fill {
+  height:100%; background:linear-gradient(90deg,var(--cyan),#b47fff);
+  width:0%; transition:width 3s linear;
+}
+
+/* recaptcha container */
+#recaptcha-container { margin-top:16px; }
+
+/* DIVIDER BOTTOM INFO */
+.bottom-info {
+  margin-top:28px; padding-top:20px; border-top:1px solid var(--border);
+  display:flex; justify-content:center; gap:30px; flex-wrap:wrap;
+}
+.bottom-info-item {
+  display:flex; align-items:center; gap:7px;
+  font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--gray);
+}
+.bottom-info-item::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--cyan); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulseGlow { 0%,100%{opacity:0.7} 50%{opacity:1} }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--cyan); }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div class="bg-grid"></div>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a class="nav-logo" href="index.html"><span>NEX</span>US ARENA</a>
+  <a class="back-link" href="index.html">← BACK TO SITE</a>
+</div>
+
+<!-- AUTH CARD -->
+<div class="auth-container">
+  <div class="auth-card" id="auth-card">
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login',this)">LOGIN</button>
+      <button class="auth-tab" onclick="switchTab('signup',this)">SIGN UP</button>
+      <button class="auth-tab" onclick="switchTab('phone',this)">PHONE</button>
+    </div>
+
+    <!-- ======== LOGIN PANEL ======== -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="auth-label">// Player Login</div>
+
+      <div class="msg error" id="login-error">⚠ &nbsp;<span id="login-error-text"></span></div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="login-email" placeholder="you@example.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input type="password" class="form-input" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginWithEmail()">
+          <button class="toggle-pw" onclick="togglePw('login-password',this)">SHOW</button>
+        </div>
+      </div>
+
+      <a class="forgot-link" onclick="forgotPassword()">Forgot password?</a>
+
+      <button class="btn-submit" id="btn-login" onclick="loginWithEmail()">
+        <span class="btn-text">ENTER THE ARENA →</span>
+        <div class="btn-loader"></div>
+      </button>
+
+      <div class="or-divider">OR</div>
+
+      <button class="btn-google" onclick="loginWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="bottom-info">
+        <div class="bottom-info-item">Secure Login</div>
+        <div class="bottom-info-item">Data Encrypted</div>
+        <div class="bottom-info-item">Cairo, Egypt</div>
+      </div>
+    </div>
+
+    <!-- ======== SIGNUP PANEL ======== -->
+    <div class="auth-panel" id="panel-signup">
+      <div class="auth-label">// Create Account</div>
+
+      <div class="msg error" id="signup-error">⚠ &nbsp;<span id="signup-error-text"></span></div>
+      <div class="msg success" id="signup-success">✓ &nbsp;<span id="signup-success-text"></span></div>
+
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <input type="text" class="form-input" id="signup-name" placeholder="YourGamertag">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="signup-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input type="password" class="form-input" id="signup-password" placeholder="Min. 8 characters">
+          <button class="toggle-pw" onclick="togglePw('signup-password',this)">SHOW</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="password-wrap">
+          <input type="password" class="form-input" id="signup-confirm" placeholder="••••••••" onkeydown="if(event.key==='Enter')signUpWithEmail()">
+          <button class="toggle-pw" onclick="togglePw('signup-confirm',this)">SHOW</button>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-signup" onclick="signUpWithEmail()">
+        <span class="btn-text">CREATE ACCOUNT →</span>
+        <div class="btn-loader"></div>
+      </button>
+
+      <div class="or-divider">OR</div>
+
+      <button class="btn-google" onclick="loginWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="terms-note">
+        By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      </div>
+    </div>
+
+    <!-- ======== PHONE PANEL ======== -->
+    <div class="auth-panel" id="panel-phone">
+      <div class="auth-label">// Phone Login</div>
+
+      <div class="msg error" id="phone-error">⚠ &nbsp;<span id="phone-error-text"></span></div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <div class="phone-row">
+          <input type="text" class="country-code" id="country-code" value="+20" placeholder="+20">
+          <input type="tel" class="form-input" id="phone-number" placeholder="1XX XXX XXXX">
+        </div>
+      </div>
+
+      <div id="recaptcha-container"></div>
+
+      <button class="btn-send-otp" id="btn-send-otp" onclick="sendOTP()">
+        SEND VERIFICATION CODE →
+      </button>
+
+      <!-- OTP INPUT -->
+      <div class="otp-wrap" id="otp-wrap">
+        <label class="form-label" style="text-align:center;display:block;margin-bottom:12px;">ENTER 6-DIGIT CODE</label>
+        <div class="otp-inputs">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,0)">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,1)">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,2)">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,3)">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,4)">
+          <input type="text" class="otp-digit" maxlength="1" oninput="otpMove(this,5)">
+        </div>
+        <button class="btn-submit" id="btn-verify-otp" onclick="verifyOTP()">
+          <span class="btn-text">VERIFY & LOGIN →</span>
+          <div class="btn-loader"></div>
+        </button>
+        <div class="otp-resend">Didn't receive it? <span onclick="sendOTP()">Resend code</span></div>
+      </div>
+    </div>
+
+    <!-- ======== SUCCESS STATE ======== -->
+    <div class="auth-success" id="auth-success">
+      <div class="success-icon-wrap">⚡</div>
+      <h3>ACCESS GRANTED</h3>
+      <p>Welcome back, <strong id="success-name" style="color:var(--cyan);font-family:'Orbitron',monospace;"></strong><br>
+      <span style="color:var(--gray);">Redirecting you to the arena...</span></p>
+      <div class="redirect-bar"><div class="redirect-fill" id="redirect-fill"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    RecaptchaVerifier,
+    signInWithPhoneNumber,
+    updateProfile,
+    sendPasswordResetEmail
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ── YOUR FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRywltr8cfnolmKKv2EHXPYIjLvw3bHtM",
+    authDomain: "nexus-arena-13710.firebaseapp.com",
+    projectId: "nexus-arena-13710",
+    storageBucket: "nexus-arena-13710.firebasestorage.app",
+    messagingSenderId: "1074459989810",
+    appId: "1:1074459989810:web:4b60c28fccda4595c0292b",
+    measurementId: "G-4SMK83T1G6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  let confirmationResult = null;
+
+  // ── CREATE / UPDATE USER PROFILE IN FIRESTORE ──
+  async function ensureUserDoc(user, extraData = {}) {
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        uid: user.uid,
+        displayName: user.displayName || extraData.displayName || "Player",
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+        loyaltyPoints: 0,
+        rank: "BRONZE",
+        totalHours: 0,
+        bookings: [],
+        createdAt: serverTimestamp(),
+        ...extraData
+      });
+    }
+  }
+
+  // ── SUCCESS REDIRECT ──
+  function onLoginSuccess(user) {
+    // Hide panels, show success
+    document.querySelectorAll('.auth-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.auth-tabs').forEach(t => t.style.display = 'none');
+    const successEl = document.getElementById('auth-success');
+    successEl.style.display = 'block';
+    document.getElementById('success-name').innerText = user.displayName || user.email || "Player";
+    // Animate redirect bar then navigate
+    setTimeout(() => {
+      document.getElementById('redirect-fill').style.width = '100%';
+    }, 100);
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 3200);
+  }
+
+  // ── SHOW ERROR ──
+  function showError(panelPrefix, message) {
+    const el = document.getElementById(`${panelPrefix}-error`);
+    const textEl = document.getElementById(`${panelPrefix}-error-text`);
+    if (el && textEl) {
+      textEl.innerText = message;
+      el.classList.add('visible');
+      setTimeout(() => el.classList.remove('visible'), 5000);
+    }
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  // ── EMAIL LOGIN ──
+  window.loginWithEmail = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { showError('login', 'Please enter your email and password.'); return; }
+    setLoading('btn-login', true);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      onLoginSuccess(cred.user);
+    } catch(e) {
+      setLoading('btn-login', false);
+      const msgs = {
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Try again.',
+        'auth/invalid-email': 'Invalid email address format.',
+        'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+        'auth/invalid-credential': 'Invalid email or password.'
+      };
+      showError('login', msgs[e.code] || e.message);
+    }
+  };
+
+  // ── EMAIL SIGN UP ──
+  window.signUpWithEmail = async function() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    if (!name) { showError('signup', 'Please enter a display name.'); return; }
+    if (!email) { showError('signup', 'Please enter your email.'); return; }
+    if (password.length < 8) { showError('signup', 'Password must be at least 8 characters.'); return; }
+    if (password !== confirm) { showError('signup', 'Passwords do not match.'); return; }
+    setLoading('btn-signup', true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: name });
+      await ensureUserDoc(cred.user, { displayName: name });
+      onLoginSuccess(cred.user);
+    } catch(e) {
+      setLoading('btn-signup', false);
+      const msgs = {
+        'auth/email-already-in-use': 'This email is already registered. Try logging in.',
+        'auth/invalid-email': 'Invalid email address format.',
+        'auth/weak-password': 'Password is too weak.'
+      };
+      showError('signup', msgs[e.code] || e.message);
+    }
+  };
+
+  // ── GOOGLE LOGIN ──
+  window.loginWithGoogle = async function() {
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      await ensureUserDoc(cred.user);
+      onLoginSuccess(cred.user);
+    } catch(e) {
+      if (e.code !== 'auth/popup-closed-by-user') {
+        showError('login', 'Google sign-in failed. Please try again.');
+      }
+    }
+  };
+
+  // ── PHONE / OTP ──
+  window.sendOTP = async function() {
+    const cc = document.getElementById('country-code').value.trim();
+    const num = document.getElementById('phone-number').value.trim().replace(/\s/g,'');
+    if (!num) { showError('phone', 'Please enter your phone number.'); return; }
+    const fullNumber = cc + num;
+    document.getElementById('btn-send-otp').disabled = true;
+    document.getElementById('btn-send-otp').innerText = 'SENDING...';
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'normal',
+          callback: () => {},
+          'expired-callback': () => { window.recaptchaVerifier = null; }
+        });
+      }
+      confirmationResult = await signInWithPhoneNumber(auth, fullNumber, window.recaptchaVerifier);
+      document.getElementById('otp-wrap').classList.add('visible');
+      document.getElementById('btn-send-otp').innerText = 'CODE SENT ✓';
+    } catch(e) {
+      document.getElementById('btn-send-otp').disabled = false;
+      document.getElementById('btn-send-otp').innerText = 'SEND VERIFICATION CODE →';
+      showError('phone', e.message || 'Failed to send code. Check the number and try again.');
+    }
+  };
+
+  window.verifyOTP = async function() {
+    const digits = document.querySelectorAll('.otp-digit');
+    const code = Array.from(digits).map(d => d.value).join('');
+    if (code.length < 6) { showError('phone', 'Please enter the full 6-digit code.'); return; }
+    if (!confirmationResult) { showError('phone', 'Please request a code first.'); return; }
+    setLoading('btn-verify-otp', true);
+    try {
+      const cred = await confirmationResult.confirm(code);
+      await ensureUserDoc(cred.user);
+      onLoginSuccess(cred.user);
+    } catch(e) {
+      setLoading('btn-verify-otp', false);
+      showError('phone', 'Invalid code. Please check and try again.');
+    }
+  };
+
+  // ── FORGOT PASSWORD ──
+  window.forgotPassword = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { showError('login', 'Enter your email above first, then click Forgot Password.'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      const el = document.getElementById('login-error');
+      const textEl = document.getElementById('login-error-text');
+      textEl.innerText = `Reset email sent to ${email}`;
+      el.classList.remove('error');
+      el.classList.add('success', 'visible');
+      setTimeout(() => { el.classList.remove('visible','success'); el.classList.add('error'); }, 5000);
+    } catch(e) {
+      showError('login', 'Could not send reset email. Check the address.');
+    }
+  };
+
+  // ── OTP DIGIT NAVIGATION ──
+  window.otpMove = function(input, index) {
+    input.value = input.value.replace(/\D/,'');
+    const digits = document.querySelectorAll('.otp-digit');
+    if (input.value && index < 5) digits[index + 1].focus();
+    // Auto-verify when all filled
+    const code = Array.from(digits).map(d => d.value).join('');
+    if (code.length === 6) verifyOTP();
+  };
+</script>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(tab, btn) {
+  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── PASSWORD TOGGLE ──
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerText = 'HIDE';
+  } else {
+    input.type = 'password';
+    btn.innerText = 'SHOW';
+  }
+}
+
+// ── CUSTOM CURSOR ──
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+  ring.style.transform = `translate(${e.clientX - 16}px, ${e.clientY - 16}px)`;
+});
+
+// ── SET MIN DATE ──
+window.onload = () => {
+  const today = new Date().toISOString().split('T')[0];
+};
+</script>
+</body>
+</html>
