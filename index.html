@@ -58,6 +58,27 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; padding:0 5%; display
 .nav-cta { border:1px solid var(--cyan); color:var(--cyan); font-family:'Orbitron',monospace; font-size:0.7rem; font-weight:600; letter-spacing:3px; text-transform:uppercase; padding:10px 22px; cursor:none; transition:all 0.25s; text-decoration:none; }
 .nav-cta:hover { background:var(--cyan); color:var(--bg); }
 
+/* USER NAV */
+.nav-login-btn { border:1px solid var(--cyan); color:var(--cyan); font-family:'Orbitron',monospace; font-size:0.7rem; font-weight:600; letter-spacing:3px; text-transform:uppercase; padding:10px 22px; cursor:none; transition:all 0.25s; text-decoration:none; background:none; display:flex; align-items:center; gap:8px; }
+.nav-login-btn:hover { background:var(--cyan); color:var(--bg); }
+.nav-user { position:relative; display:none; }
+.nav-user-btn { display:flex; align-items:center; gap:10px; background:var(--cyan-dim); border:1px solid var(--border-hot); padding:7px 16px 7px 10px; cursor:none; transition:all 0.25s; }
+.nav-user-btn:hover { background:rgba(0,245,255,0.2); }
+.nav-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--cyan),#b47fff); display:flex; align-items:center; justify-content:center; font-family:'Orbitron',monospace; font-weight:700; font-size:0.7rem; color:var(--bg); flex-shrink:0; }
+.nav-username { font-family:'Orbitron',monospace; font-size:0.68rem; font-weight:600; letter-spacing:2px; color:var(--white); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nav-chevron { font-size:0.6rem; color:var(--cyan); transition:transform 0.2s; }
+.nav-user.open .nav-chevron { transform:rotate(180deg); }
+.nav-dropdown { position:absolute; top:calc(100% + 10px); right:0; min-width:200px; background:var(--modal-bg); border:1px solid var(--border-hot); z-index:500; opacity:0; pointer-events:none; transform:translateY(-8px); transition:all 0.2s; }
+.nav-user.open .nav-dropdown { opacity:1; pointer-events:all; transform:translateY(0); }
+.nav-dropdown-header { padding:14px 18px; border-bottom:1px solid var(--border); }
+.nav-dropdown-email { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--gray); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nav-dropdown-pts { font-family:'Orbitron',monospace; font-size:0.7rem; color:var(--cyan); margin-top:6px; }
+.nav-dropdown a, .nav-dropdown button { display:flex; align-items:center; gap:10px; width:100%; padding:12px 18px; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.9rem; color:var(--gray); text-decoration:none; background:none; border:none; cursor:none; transition:all 0.2s; text-align:left; letter-spacing:1px; border-bottom:1px solid var(--border); }
+.nav-dropdown a:last-child, .nav-dropdown button:last-child { border-bottom:none; }
+.nav-dropdown a:hover, .nav-dropdown button:hover { color:var(--white); background:rgba(0,245,255,0.05); padding-left:22px; }
+.nav-dropdown .logout-btn { color:var(--orange); }
+.nav-dropdown .logout-btn:hover { color:var(--orange); background:rgba(255,107,43,0.07); }
+
 /* ============================================================
    HERO
 ============================================================ */
@@ -439,7 +460,29 @@ footer { padding:60px 5% 36px; border-top:1px solid var(--border); background:va
   </ul>
   <div class="nav-right">
     <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">☀️</button>
-    <a href="#booking" class="nav-cta">Book Now</a>
+
+    <!-- LOGGED OUT -->
+    <a href="login.html" class="nav-login-btn" id="nav-login-btn">⚡ LOGIN</a>
+
+    <!-- LOGGED IN -->
+    <div class="nav-user" id="nav-user">
+      <button class="nav-user-btn" onclick="toggleUserDropdown()">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-username" id="nav-username">Player</span>
+        <span class="nav-chevron">▼</span>
+      </button>
+      <div class="nav-dropdown">
+        <div class="nav-dropdown-header">
+          <div style="font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;" id="dropdown-name">Player</div>
+          <div class="nav-dropdown-email" id="dropdown-email"></div>
+          <div class="nav-dropdown-pts" id="dropdown-pts">0 NEXUS PTS</div>
+        </div>
+        <a href="#booking" onclick="closeUserDropdown()">🎮 &nbsp;Book a Station</a>
+        <a href="#loyalty" onclick="closeUserDropdown()">⭐ &nbsp;My Loyalty Points</a>
+        <a href="#" onclick="closeUserDropdown()">👤 &nbsp;My Profile</a>
+        <button class="logout-btn" onclick="logoutUser()">⏻ &nbsp;Logout</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1156,6 +1199,74 @@ window.addEventListener('scroll', () => {
   }
 });
 
+
+// USER DROPDOWN TOGGLE
+function toggleUserDropdown() {
+  document.getElementById('nav-user').classList.toggle('open');
+}
+function closeUserDropdown() {
+  document.getElementById('nav-user').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const navUser = document.getElementById('nav-user');
+  if (navUser && !navUser.contains(e.target)) closeUserDropdown();
+});
+</script>
+
+<!-- FIREBASE AUTH LISTENER -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRywltr8cfnolmKKv2EHXPYIjLvw3bHtM",
+    authDomain: "nexus-arena-13710.firebaseapp.com",
+    projectId: "nexus-arena-13710",
+    storageBucket: "nexus-arena-13710.firebasestorage.app",
+    messagingSenderId: "1074459989810",
+    appId: "1:1074459989810:web:4b60c28fccda4595c0292b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  onAuthStateChanged(auth, async (user) => {
+    const loginBtn = document.getElementById('nav-login-btn');
+    const userNav  = document.getElementById('nav-user');
+
+    if (user) {
+      loginBtn.style.display = 'none';
+      userNav.style.display  = 'block';
+
+      const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Player');
+      const initials = displayName.slice(0,2).toUpperCase();
+
+      document.getElementById('nav-avatar').innerText    = initials;
+      document.getElementById('nav-username').innerText  = displayName;
+      document.getElementById('dropdown-name').innerText = displayName;
+      document.getElementById('dropdown-email').innerText = user.email || user.phoneNumber || '';
+
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const pts = snap.data().loyaltyPoints || 0;
+          document.getElementById('dropdown-pts').innerText = pts.toLocaleString() + ' NEXUS PTS';
+        }
+      } catch(e) {}
+
+    } else {
+      loginBtn.style.display = 'flex';
+      userNav.style.display  = 'none';
+    }
+  });
+
+  window.logoutUser = async function() {
+    await signOut(auth);
+    document.getElementById('nav-user').classList.remove('open');
+    showToast('Logged out. See you next time!');
+  };
 </script>
 </body>
 </html>
